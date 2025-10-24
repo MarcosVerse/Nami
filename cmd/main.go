@@ -1,15 +1,30 @@
+// @title Nami API
+// @version 1.0
+// @description API para controlar despesas
+// @host localhost:8081
+// @BasePath /
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/MarcosVerse/nami/internal/routes"
+	"github.com/MarcosVerse/nami/internal/database"
+	"github.com/gin-gonic/gin"
+
+	_ "github.com/MarcosVerse/nami/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+)
 
 func main() {
-    r := gin.Default()
+	database.Connect()
 
-    r.GET("/ping", func(c *gin.Context) {
-        c.JSON(200, gin.H{
-            "message": "pong",
-        })
-    })
+	// Servidor principal da API
 
-    r.Run(":8081")
+	r := gin.Default()
+	routes.RegisterRoutes(r)
+
+	// Swagger
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	r.Run(":8081") // API + Swagger 
 }
