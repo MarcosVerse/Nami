@@ -1,0 +1,101 @@
+basePath: /
+definitions:
+  models.Usuario:
+    properties:
+      atualizado_em:
+        type: string
+      criado_em:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nome:
+        type: string
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: API para controlar despesas
+  title: Nami API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica um usuário e retorna token JWT
+      parameters:
+      - description: Login
+        in: body
+        name: login
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login de usuário
+      tags:
+      - usuários
+  /usuarios:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Usuário
+        in: body
+        name: usuario
+        required: true
+        schema:
+          $ref: '#/definitions/models.Usuario'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Usuario'
+      summary: Cria um usuário
+      tags:
+      - usuários
+  /usuarios/{id}:
+    delete:
+      description: Remove usuário do banco pelo ID
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deleta um usuário
+      tags:
+      - usuários
+swagger: "2.0"
