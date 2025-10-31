@@ -7,7 +7,7 @@ package main
 
 import (
 	"github.com/MarcosVerse/nami/internal/routes"
-	"github.com/MarcosVerse/nami/internal/database"
+	"github.com/MarcosVerse/nami/internal/repository"
 	"github.com/gin-gonic/gin"
 
 	_ "github.com/MarcosVerse/nami/docs"
@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	database.Connect()
+	repository.Connect()
 
 	// Servidor principal da API
 
