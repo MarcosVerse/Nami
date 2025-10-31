@@ -4,54 +4,51 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MarcosVerse/nami/internal/database"
+	"github.com/MarcosVerse/nami/internal/dto"
 	"github.com/MarcosVerse/nami/internal/models"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/MarcosVerse/nami/internal/repository"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
-// Login autentica usuário e retorna token JWT
-// @Summary Login de usuário
-// @Description Autentica um usuário e retorna token JWT
-// @Tags usuários
+// Login autentica um usuário (simplificado)
+// @Summary Realiza login do usuário
+// @Description Autentica o usuário com email e senha e retorna um token JWT
+// @Tags Auth
 // @Accept json
 // @Produce json
-// @Param login body map[string]string true "Login"
-// @Success 200 {object} map[string]string
-// @Failure 401 {object} map[string]string
+// @Param login body dto.LoginInput true "Credenciais de login"
+// @Success 200 {object} dto.LoginResponse
+// @Failure 400 {object} dto.LoginResponse
+// @Failure 401 {object} dto.LoginResponse
 // @Router /login [post]
 func Login(c *gin.Context) {
-	var input struct {
-		Email string `json:"email"`
-		Senha string `json:"senha"`
-	}
+	var input dto.LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, dto.LoginResponse{Message: "Dados inválidos"})
 		return
 	}
 
-	var usuario models.Usuario
-	if err := database.DB.Where("email = ?", input.Email).First(&usuario).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Email ou senha incorretos"})
+	var usuario models.Usuario 
+	if err := repository.DB.Where("email = ? AND senha = ?", input.Email, input.Senha).First(&usuario).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, dto.LoginResponse{Message: "Email ou senha incorretos"})
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(usuario.Senha), []byte(input.Senha)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Email ou senha incorretos"})
-		return
-	}
-
+	// aqui gera o token jwt
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":  usuario.ID,
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
+		"exp": time.Now().Add(72 * time.Hour).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte("SUA_CHAVE_SECRETA"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao gerar token"})
+		c.JSON(http.StatusInternalServerError, dto.LoginResponse{Message: "Erro ao gerar token"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+	c.JSON(http.StatusOK, dto.LoginResponse{
+		Message: "Login realizado com sucesso",
+		Token:   tokenString,
+	})
 }
