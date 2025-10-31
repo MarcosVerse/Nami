@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/login": {
             "post": {
-                "description": "Autentica um usuário e retorna token JWT",
+                "description": "Autentica o usuário com email e senha e retorna um token JWT",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,20 +25,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "usuários"
+                    "Auth"
                 ],
-                "summary": "Login de usuário",
+                "summary": "Realiza login do usuário",
                 "parameters": [
                     {
-                        "description": "Login",
+                        "description": "Credenciais de login",
                         "name": "login",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.LoginInput"
                         }
                     }
                 ],
@@ -46,19 +43,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.LoginResponse"
                         }
                     }
                 }
@@ -73,7 +70,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "usuários"
+                    "Usuários"
                 ],
                 "summary": "Cria um usuário",
                 "parameters": [
@@ -83,7 +80,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Usuario"
+                            "$ref": "#/definitions/dto.CreateUsuarioInput"
                         }
                     }
                 ],
@@ -93,15 +90,82 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.Usuario"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseMessage"
+                        }
                     }
                 }
             }
         },
         "/usuarios/{id}": {
-            "delete": {
-                "description": "Remove usuário do banco pelo ID",
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
-                    "usuários"
+                    "Usuários"
+                ],
+                "summary": "Atualiza um usuário",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do usuário",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dados para atualização",
+                        "name": "usuario",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUsuarioInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseMessage"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Usuários"
                 ],
                 "summary": "Deleta um usuário",
                 "parameters": [
@@ -117,19 +181,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.ResponseMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResponseMessage"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.ResponseMessage"
                         }
                     }
                 }
@@ -137,6 +201,77 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.CreateUsuarioInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "nome",
+                "senha"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "nome": {
+                    "type": "string"
+                },
+                "senha": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "senha"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "senha": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "token": {
+                    "description": "uso futuro",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ResponseMessage": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateUsuarioInput": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "string"
+                },
+                "nome": {
+                    "type": "string",
+                    "example": "string"
+                },
+                "senha": {
+                    "type": "string",
+                    "example": "string"
+                }
+            }
+        },
         "models.Usuario": {
             "type": "object",
             "properties": {
